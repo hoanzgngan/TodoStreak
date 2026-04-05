@@ -15,6 +15,8 @@
       crossorigin="anonymous"
       referrerpolicy="no-referrer"
     />
+    <!-- Ant Design Icons -->
+    <link rel="stylesheet" href="https://unpkg.com/@ant-design/icons@4.7.0/lib/bundle.css" />
     <link rel="stylesheet" href="./styles.css" />
     <title>To Do List</title>
 </head>
@@ -50,6 +52,78 @@
         <ul class="todo-list"></ul>
     </div>
 
+    <!-- STREAK SECTION -->
+    <div class="streak-section">
+        <h2>Streak Tracker</h2>
+        
+        <!-- Add Topic Button -->
+        <div class="streak-controls">
+            <button class="add-topic-btn" id="addTopicBtn">
+                <i class="fas fa-plus-circle"></i> Thêm chủ đề
+            </button>
+        </div>
+
+        <!-- Topics Container -->
+        <div class="topics-container" id="topicsContainer"></div>
+    </div>
+
+    <!-- Modal thêm chủ đề -->
+    <div id="topicModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>Tạo chủ đề mới</h3>
+            <input type="text" id="topicNameInput" placeholder="Nhập tên chủ đề" />
+            <button id="saveTopicBtn" class="btn-save">Lưu</button>
+        </div>
+    </div>
+
+    <!-- Modal xem chi tiết chủ đề -->
+    <div id="detailModal" class="modal">
+        <div class="modal-content modal-detail">
+            <span class="close close-detail">&times;</span>
+            <h3 id="detailTopicTitle"></h3>
+            
+            <div class="detail-stats">
+                <div class="stat-box">
+                    <div class="stat-label">Tháng này</div>
+                    <div class="stat-value" id="currentMonthStreak">0</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Tháng trước</div>
+                    <div class="stat-value" id="previousMonthStreak">0</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Tổng cộng</div>
+                    <div class="stat-value" id="totalStreakValue">0</div>
+                </div>
+            </div>
+
+            <!-- Calendar Section -->
+            <div class="calendar-section">
+                <div class="calendar-header">
+                    <button class="calendar-nav-btn" id="prevMonthBtn">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <h4 id="calendarTitle"></h4>
+                    <button class="calendar-nav-btn" id="nextMonthBtn">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+
+                <div class="calendar-grid" id="calendarGrid"></div>
+            </div>
+
+            <div class="detail-section">
+                <h4> Chi tiết streaks:</h4>
+                <div id="streaksList" class="streaks-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div id="notification" class="notification"></div>
+
     <script src="script.js"></script>
+    <script src="streak.js"></script>
 </body>
 </html>
