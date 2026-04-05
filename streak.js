@@ -153,11 +153,12 @@ class StreakTracker {
     createTopicElement(topic) {
         const div = document.createElement('div');
         div.className = 'topic-card topic-card-clickable';
+        const activeStreak = this.getActiveStreakCount(topic);
         div.innerHTML = `
             <div class="topic-header">
                 <div class="topic-title">
                     <span>${topic.name}</span>
-                    <span class="topic-streak-count">${this.getTotalStreakCount(topic)}</span>
+                    <span class="topic-streak-count">🔥 ${activeStreak}</span>
                 </div>
                 <button class="delete-topic-btn" onclick="event.stopPropagation(); streakTracker.deleteTopic(${topic.id})">
                     <i class="fas fa-trash"></i> Xóa
@@ -181,6 +182,85 @@ class StreakTracker {
     // Lấy tổng số streak (số ngày được tick)
     getTotalStreakCount(topic) {
         return Object.keys(topic.streaks).length;
+    }
+
+    // Lấy current streak (chuỗi liên tiếp từ hôm nay hoặc ngày gần nhất có streak)
+    getCurrentStreakCount(topic) {
+        const today = new Date();
+        let count = 0;
+        let currentDate = new Date(today);
+        let maxAttempts = 365; // Đảm bảo không loop vô hạn
+        let attempts = 0;
+        
+        while (attempts < maxAttempts) {
+            const year = currentDate.getFullYear();
+            const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+            const day = String(currentDate.getDate()).padStart(2, '0');
+            const dateString = `${year}-${month}-${day}`;
+            
+            if (topic.streaks[dateString]) {
+                count++;
+                currentDate.setDate(currentDate.getDate() - 1);
+            } else {
+                break;
+            }
+            attempts++;
+        }
+        return count;
+    }
+
+    // Lấy active streak (chuỗi dang giữ - từ ngày mới nhất có streak trở về, kiểm tra 365 ngày)
+    getActiveStreakCount(topic) {
+        const streakDates = Object.keys(topic.streaks).sort().reverse(); // Sắp xếp từ mới nhất
+        
+        if (streakDates.length === 0) return 0;
+        
+        // Lấy ngày gần nhất được tick
+        const mostRecentDate = new Date(streakDates[0] + 'T00:00:00');
+        let count = 1;
+        let currentDate = new Date(mostRecentDate);
+        
+        // Lùi 1 ngày và kiểm tra liên tiếp
+        for (let i = 1; i < 365; i++) {
+            currentDate.setDate(currentDate.getDate() - 1);
+            const year = currentDate.getFullYear();
+            const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+            const day = String(currentDate.getDate()).padStart(2, '0');
+            const dateString = `${year}-${month}-${day}`;
+            
+            if (topic.streaks[dateString]) {
+                count++;
+            } else {
+                break;
+            }
+        }
+        return count;
+    }
+
+    // Lấy longest streak (chuỗi dài nhất)
+    getLongestStreakCount(topic) {
+        const streakDates = Object.keys(topic.streaks).sort();
+        if (streakDates.length === 0) return 0;
+        
+        let maxStreak = 1;
+        let currentStreak = 1;
+        
+        for (let i = 1; i < streakDates.length; i++) {
+            const prevDate = new Date(streakDates[i - 1]);
+            const currentDateObj = new Date(streakDates[i]);
+            
+            // Tính ngày liên tiếp
+            const dayDiff = Math.floor((currentDateObj - prevDate) / (1000 * 60 * 60 * 24));
+            
+            if (dayDiff === 1) {
+                currentStreak++;
+            } else {
+                maxStreak = Math.max(maxStreak, currentStreak);
+                currentStreak = 1;
+            }
+        }
+        maxStreak = Math.max(maxStreak, currentStreak);
+        return maxStreak;
     }
 
     // Lấy month-year từ date string (YYYY-MM-DD)
@@ -250,6 +330,8 @@ class StreakTracker {
 
     // Update topic stats (called when updating streak)
     updateTopicDetailStats(topic) {
+        const currentStreakElem = document.getElementById('currentStreakValue');
+        const longestStreakElem = document.getElementById('longestStreakValue');
         const currentMonthElem = document.getElementById('currentMonthStreak');
         const previousMonthElem = document.getElementById('previousMonthStreak');
         const totalElem = document.getElementById('totalStreakValue');
@@ -260,10 +342,14 @@ class StreakTracker {
         const currentMonth = this.getCurrentMonth();
         const previousMonth = this.getPreviousMonth();
 
+        const activeStreakCount = this.getActiveStreakCount(topic);
+        const longestStreakCount = this.getLongestStreakCount(topic);
         const currentMonthCount = monthlyStreaks[currentMonth] || 0;
         const previousMonthCount = monthlyStreaks[previousMonth] || 0;
         const totalCount = this.getTotalStreakCount(topic);
 
+        currentStreakElem.textContent = activeStreakCount;
+        longestStreakElem.textContent = longestStreakCount;
         currentMonthElem.textContent = currentMonthCount;
         previousMonthElem.textContent = previousMonthCount;
         totalElem.textContent = totalCount;
